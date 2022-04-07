@@ -33,9 +33,9 @@ def getDictFromList(listOfTuple):
         listOfDict.append(required_dict)
     return listOfDict
 
-
+#return dict
 def getJSONFromList(listOfTuple):
     # give list dict from list
     required_dict = getDictFromList(listOfTuple)
     # use json library to receive valid json
-    return json.dumps(required_dict)
+    return json.loads(json.dumps(required_dict))
