@@ -12,8 +12,9 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
 def home_page():
-    #show home page
-    return render_template("index.html", title='home page', data={'hello world'})
+    if request.method == 'GET':
+        #show home page
+        return render_template("index.html", title='home page', data={'hello world'})
 
 
 @app.route('/artists', methods=['GET', 'POST'])
@@ -227,11 +228,12 @@ def current_songs_current_album(artist_name, album_name, song_name):
 
 @app.route('/search', methods=['GET'])
 def search():
-    args = request.args
-    args_dict = args.to_dict()
-    searched_data = JSONconverter.getJSONFromList(
-        db_managing.searchItems(args_dict["table"], args_dict["item"]))
-    return render_template("index.html", title='search page', data=searched_data)
+    if request.method == 'GET':
+        args = request.args
+        args_dict = args.to_dict()
+        searched_data = JSONconverter.getJSONFromList(
+            db_managing.searchItems(args_dict["table"], args_dict["item"]))
+        return render_template("index.html", title='search page', data=searched_data)
 
 
 if __name__ == '__main__':
