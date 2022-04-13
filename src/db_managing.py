@@ -46,7 +46,6 @@ def connect():
             print('Database connection closed.')
 
 
-# get items from db
 def getItems(table_name, item_name='none', item_id='none'):
     requested_data = []
     conn = None
@@ -55,31 +54,20 @@ def getItems(table_name, item_name='none', item_id='none'):
         conn = psycopg2.connect(**params)
         cur = conn.cursor()
 
-        if table_name == 'artists':
+        if table_name == 'artists' or table_name == 'songs' or table_name == 'albums':
             if item_name == 'none':
-                cur.execute("SELECT * FROM artists ORDER BY artist_name")
+                cur.execute(
+                    f"SELECT * FROM {table_name}")
             else:
                 cur.execute(
-                    f"select * from artists where artist_name='{item_name}'")
-        elif table_name == 'songs':
-            if item_name== 'none':
-                cur.execute("SELECT * FROM songs ORDER BY song_name")
-            else:
-                cur.execute(
-                    f"SELECT * FROM songs WHERE song_name='{item_name}'")
-            print(cur.rowcount)
-        elif table_name == 'albums':
-            if item_name == 'none':
-                cur.execute("SELECT * FROM albums ORDER BY album_name")
-            else:
-                cur.execute(
-                    f"SELECT * FROM albums WHERE album_name='{item_name}'")
-        elif table_name == 'artist_song_album':
-            if item_name == 'none':
-                cur.execute("SELECT * FROM artist_song_album")
-            else:
-                cur.execute(
-                    f"SELECT * FROM artist_song_album WHERE {item_name}_id='{item_id}'")
+                    f"SELECT * FROM {table_name} WHERE {table_name[:-1]}_name='{item_name}'")
+        elif table_name == 'artist_album':
+            cur.execute(
+                f"SELECT * FROM {table_name} WHERE {item_name}_id='{item_id}'")
+        elif table_name == 'album_song':
+            cur.execute(
+                f"SELECT * FROM {table_name} WHERE {item_name}_id='{item_id}'")
+
         row = cur.fetchone()
         while row is not None:
             requested_data.append(row)
@@ -93,7 +81,6 @@ def getItems(table_name, item_name='none', item_id='none'):
     return requested_data
 
 
-# post items to db
 def postItem(table_name, item_object):
     requested_data = None
     conn = None
@@ -129,7 +116,6 @@ def postItem(table_name, item_object):
     return requested_data
 
 
-# search items on db in current table
 def searchItems(table_name, item_name):
     requested_data = None
     conn = None
@@ -159,16 +145,14 @@ def searchItems(table_name, item_name):
     return requested_data
 
 
-# delete item from db
 def deleteItem(table_name, item_id, item_name='none'):
-    requested_data = None
     conn = None
     rows_deleted = 0
     try:
         params = config()
         conn = psycopg2.connect(**params)
         cur = conn.cursor()
-        if table_name != 'artist_album' and 'album_song':
+        if table_name == 'artists' or table_name == 'songs' or table_name == 'albums':
             cur.execute(
                 f"DELETE FROM {table_name} WHERE {table_name[:-1]}_id = {item_id}")
         elif table_name == 'artist_album':
@@ -177,7 +161,7 @@ def deleteItem(table_name, item_id, item_name='none'):
         elif table_name == 'album_song':
             cur.execute(
                 f"DELETE FROM {table_name} WHERE {item_name}_id = {item_id}")
-        # print(cur.rowcount)
+
         rows_deleted = cur.rowcount
         conn.commit()
         cur.close()
@@ -190,7 +174,6 @@ def deleteItem(table_name, item_id, item_name='none'):
     return rows_deleted
 
 
-# update db item
 def updateItem(table_name, item_object):
     conn = None
     updated_rows = 0
@@ -198,6 +181,7 @@ def updateItem(table_name, item_object):
         params = config()
         conn = psycopg2.connect(**params)
         cur = conn.cursor()
+
         if table_name == 'artists':
             cur.execute(
                 f"UPDATE {table_name} SET {table_name[:-1]}_name='{item_object['artist_name']}', {table_name[:-1]}_info='{item_object['artist_info']}' WHERE {table_name[:-1]}_id={item_object['artist_id']}")
@@ -207,6 +191,7 @@ def updateItem(table_name, item_object):
         elif table_name == 'albums':
             cur.execute(
                 f"UPDATE {table_name} SET {table_name[:-1]}_name='{item_object['album_name']}', {table_name[:-1]}_year='{item_object['album_year']}', {table_name[:-1]}_info='{item_object['album_info']}' WHERE {table_name[:-1]}_id={item_object['album_id']}")
+        
         updated_rows = cur.rowcount
         conn.commit()
         cur.close()
@@ -227,12 +212,12 @@ def getAlbumsForArtist(artist_name):
         conn = psycopg2.connect(**params)
         cur = conn.cursor()
 
-        cur.execute(f'''select distinct album_name, album_year, album_info from albums
-                        join artist_album
-                        on albums.album_id = artist_album.album_id
-                        join artists
-                        on artists.artist_id = artist_album.artist_id
-                        where artists.artist_name = '{artist_name}'
+        cur.execute(f'''SELECT DISTINCT album_name, album_year, album_info FROM albums
+                        JOIN artist_album
+                        ON albums.album_id = artist_album.album_id
+                        JOIN artists
+                        ON artists.artist_id = artist_album.artist_id
+                        WHERRE artists.artist_name = '{artist_name}'
                         ''')
 
         row = cur.fetchone()
@@ -256,12 +241,12 @@ def getCurrentAlbum(artist_name, album_name):
         conn = psycopg2.connect(**params)
         cur = conn.cursor()
 
-        cur.execute(f'''select distinct album_name, album_year, album_info from albums
-                        join artist_album
-                        on albums.album_id = artist_album.album_id
-                        join artists
-                        on artist_album.artist_id = artists.artist_id
-                        where artists.artist_name = '{artist_name}' and albums.album_name='{album_name}'
+        cur.execute(f'''SELECT DISTINCT album_name, album_year, album_info FROM albums
+                        JOIN artist_album
+                        ON albums.album_id = artist_album.album_id
+                        JOIN artists
+                        ON artist_album.artist_id = artists.artist_id
+                        WHERE artists.artist_name = '{artist_name}' AND albums.album_name='{album_name}'
                         ''')
 
         row = cur.fetchone()
@@ -285,14 +270,14 @@ def getSongsForArtist(artist_name):
         conn = psycopg2.connect(**params)
         cur = conn.cursor()
 
-        cur.execute(f'''select distinct song_name, song_text, song_year, original_lang from songs
-                    join album_song
-                    on songs.song_id=album_song.song_id
-                    join artist_album
+        cur.execute(f'''SELECT DISTINCT song_name, song_text, song_year, original_lang FROM songs
+                    JOIN album_song
+                    ON songs.song_id=album_song.song_id
+                    JOIN artist_album
                     on artist_album.album_id=album_song.album_id
-                    join artists
-                    on artists.artist_id=artist_album.artist_id
-                    where artists.artist_name='{artist_name}'
+                    JOIN artists
+                    ON artists.artist_id=artist_album.artist_id
+                    WHERE artists.artist_name='{artist_name}'
                     ''')
 
         row = cur.fetchone()
@@ -316,16 +301,16 @@ def getSongsForAlbums(artist_name, album_name):
         conn = psycopg2.connect(**params)
         cur = conn.cursor()
 
-        cur.execute(f'''select distinct song_name, song_text, song_year, original_lang from songs
-                        join album_song 
-                        on songs.song_id = album_song.song_id
-                        join artist_album
-                        on artist_album.album_id = album_song.album_id
-                        join artists
-                        on artist_album.artist_id = artists.artist_id
-                        join albums
-                        on artist_album.album_id = albums.album_id
-                        where artists.artist_name = '{artist_name}' and albums.album_name = '{album_name}'
+        cur.execute(f'''SELECT DISTINCT song_name, song_text, song_year, original_lang FROM songs
+                        JOIN album_song 
+                        ON songs.song_id = album_song.song_id
+                        JOIN artist_album
+                        ON artist_album.album_id = album_song.album_id
+                        JOIN artists
+                        ON artist_album.artist_id = artists.artist_id
+                        JOIN albums
+                        ON artist_album.album_id = albums.album_id
+                        WHERE artists.artist_name = '{artist_name}' AND albums.album_name = '{album_name}'
                         ''')
 
         row = cur.fetchone()
@@ -349,17 +334,17 @@ def getSongForAlbum(artist_name, album_name, song_name):
         conn = psycopg2.connect(**params)
         cur = conn.cursor()
 
-        cur.execute(f'''select distinct song_name, song_text, song_year, original_lang from songs
-                        join album_song 
-                        on songs.song_id = album_song.song_id
-                        join artist_album
-                        on artist_album.album_id = album_song.album_id
-                        join artists
-                        on artist_album.artist_id = artists.artist_id
-                        join albums
-                        on artist_album.album_id = albums.album_id
-                        where artists.artist_name = '{artist_name}' and albums.album_name = '{album_name}'
-                        and songs.song_name = '{song_name}'
+        cur.execute(f'''SELECT DISTINCT song_name, song_text, song_year, original_lang FROM songs
+                        JOIN album_song 
+                        ON songs.song_id = album_song.song_id
+                        JOIN artist_album
+                        ON artist_album.album_id = album_song.album_id
+                        JOIN artists
+                        ON artist_album.artist_id = artists.artist_id
+                        JOIN albums
+                        ON artist_album.album_id = albums.album_id
+                        WHERE artists.artist_name = '{artist_name}' AND albums.album_name = '{album_name}'
+                        AND songs.song_name = '{song_name}'
                         ''')
 
         row = cur.fetchone()
@@ -383,16 +368,16 @@ def getCurrentText(artist_name, song_name):
         conn = psycopg2.connect(**params)
         cur = conn.cursor()
 
-        cur.execute(f'''select distinct song_text from songs
-                        join album_song
-                        on songs.song_id = album_song.song_id
-                        join albums
-                        on album_song.album_id = albums.album_id
-                        join artist_album
-                        on artist_album.album_id = albums.album_id
-                        join artists
-                        on artists.artist_id = artist_album.artist_id
-                        where artists.artist_name = '{artist_name}' and songs.song_name='{song_name}'
+        cur.execute(f'''SELECT DISTINCT song_text FROM songs
+                        JOIN album_song
+                        ON songs.song_id = album_song.song_id
+                        JOIN albums
+                        ON album_song.album_id = albums.album_id
+                        JOIN artist_album
+                        ON artist_album.album_id = albums.album_id
+                        JOIN artists
+                        ON artists.artist_id = artist_album.artist_id
+                        WHERE artists.artist_name = '{artist_name}' AND songs.song_name='{song_name}'
                         ''')
 
         row = cur.fetchone()
@@ -416,16 +401,16 @@ def getAlbumForSong(artist_name, song_name):
         conn = psycopg2.connect(**params)
         cur = conn.cursor()
 
-        cur.execute(f'''select distinct album_name from songs
-                        join album_song
-                        on songs.song_id = album_song.song_id
-                        join albums
-                        on album_song.album_id = albums.album_id
-                        join artist_album
-                        on artist_album.album_id = albums.album_id
-                        join artists
-                        on artists.artist_id = artist_album.artist_id
-                        where artists.artist_name = '{artist_name}' and songs.song_name='{song_name}'
+        cur.execute(f'''SELECT DISTINCT album_name FROM songs
+                        JOIN album_song
+                        ON songs.song_id = album_song.song_id
+                        JOIN albums
+                        ON album_song.album_id = albums.album_id
+                        JOIN artist_album
+                        ON artist_album.album_id = albums.album_id
+                        JOIN artists
+                        ON artists.artist_id = artist_album.artist_id
+                        WHERE artists.artist_name = '{artist_name}' AND songs.song_name='{song_name}'
                         ''')
 
         row = cur.fetchone()
@@ -439,47 +424,6 @@ def getAlbumForSong(artist_name, song_name):
         if conn is not None:
             conn.close()
     return requested_data
-
-
-
-
-
-
-
-
-
-def getCurrentSongForArtist(artist_name, song_name):
-    requested_data = []
-    conn = None
-    try:
-        params = config()
-        conn = psycopg2.connect(**params)
-        cur = conn.cursor()
-
-        cur.execute(f'''select distinct song_name, song_text, song_year, original_lang from songs
-                        join artist_song_album 
-                        on songs.song_id = artist_song_album.song_id
-                        join albums
-                        on artist_song_album.album_id = albums.album_id
-                        join artists
-                        on artist_song_album.artist_id = artists.artist_id
-                        where artists.artist_name = '{artist_name}' and songs.song_name='{song_name}'
-                        ''')
-
-        row = cur.fetchone()
-        while row is not None:
-            requested_data.append(row)
-            row = cur.fetchone()
-        cur.close()
-    except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
-    finally:
-        if conn is not None:
-            conn.close()
-    return requested_data
-
-
-
 
 
 def getItemId(table_name, item_name):
@@ -492,7 +436,7 @@ def getItemId(table_name, item_name):
 
         if table_name == 'artists':
             cur.execute(
-                f"SELECT artist_id from artists where artist_name='{item_name}'")
+                f"SELECT artist_id FROM artists WHERE artist_name='{item_name}'")
         elif table_name == 'songs':
             cur.execute(
                 f"SELECT song_id FROM songs WHERE song_name='{item_name}'")
@@ -510,5 +454,5 @@ def getItemId(table_name, item_name):
     return requested_data
 
 
-# if __name__ == '__main__':
+
 
