@@ -157,7 +157,7 @@ def getAlbumsForArtist(artist_name):
 def getCurrentAlbum(artist_name, album_name):
     requested_data = models.albums.query\
         .join(models.artists, models.albums.artist_id == models.artists.artist_id)\
-        .filter(models.artists.artist_name == 'John Lennon')\
-        .filter(models.albums.album_name == 'Revolver').all()
+        .filter(models.artists.artist_name == artist_name)\
+        .filter(models.albums.album_name == album_name).all()
     return requested_data
 
