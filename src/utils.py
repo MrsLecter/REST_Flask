@@ -15,3 +15,6 @@ def getRequiredId(list, order):
         required_id.append(item[order_item])
       return required_id
 
+#handle delete song
+def deleteSong(song_id):
+  linked_albums = db_managing.getItems('album_song', 'song', song_id)

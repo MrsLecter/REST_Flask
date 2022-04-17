@@ -217,7 +217,7 @@ def getAlbumsForArtist(artist_name):
                         ON albums.album_id = artist_album.album_id
                         JOIN artists
                         ON artists.artist_id = artist_album.artist_id
-                        WHERRE artists.artist_name = '{artist_name}'
+                        WHERE artists.artist_name = '{artist_name}'
                         ''')
 
         row = cur.fetchone()
@@ -310,7 +310,7 @@ def getSongsForAlbums(artist_name, album_name):
                         ON artist_album.artist_id = artists.artist_id
                         JOIN albums
                         ON artist_album.album_id = albums.album_id
-                        WHERE artists.artist_name = '{artist_name}' AND albums.album_name = '{album_name}'
+                        WHERE artists.artist_name = '{artist_name}' AND albums.album_name ='{album_name}'
                         ''')
 
         row = cur.fetchone()
@@ -454,5 +454,6 @@ def getItemId(table_name, item_name):
     return requested_data
 
 
-
+# if __name__ == '__main__':
+#     print(getSongForAlbum(test_artist, test_album, test_song3))
 
