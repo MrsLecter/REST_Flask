@@ -14,8 +14,8 @@ from datetime import datetime
 # create instance
 app = Flask(__name__)
 # add db
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://**login**:**passwd**@localhost:5432/**database**'
-app.config['SECRET_KEY'] = '**key**'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:psql@localhost:5432/db_music'
+app.config['SECRET_KEY'] = 'supersecret_key'
 # initialize
 db = SQLAlchemy(app)
 
@@ -149,15 +149,25 @@ def updateItem(table_name, item_object):
 
 def getAlbumsForArtist(artist_name):
     requested_data = models.albums.query\
-        .join(models.artists, models.artists.artist_id==models.albums.artist_id)\
+        .join(models.artist_album, models.artist_album.album_id == models.albums.album_id)\
+        .join(models.artists, models.artists.artist_id == models.artist_album.artist_id)\
         .filter(models.artists.artist_name==artist_name).all()
     return requested_data
 
 
 def getCurrentAlbum(artist_name, album_name):
     requested_data = models.albums.query\
-        .join(models.artists, models.albums.artist_id == models.artists.artist_id)\
+        .join(models.artist_album, models.artist_album.album_id == models.albums.album_id)\
+        .join(models.artists, models.artists.artist_id == models.artist_album.artist_id)\
         .filter(models.artists.artist_name == artist_name)\
         .filter(models.albums.album_name == album_name).all()
+    return requested_data
+
+def getSongsForArtist(artist_name):
+    requested_data =models.songs.query\
+        .join(models.album_song, models.album_song.song_id == models.songs.song_id)\
+        .join(models.artist_album, models.artist_album.album_id == models.album_song.album_id)\
+        .join(models.artists, models.artists.artist_id == models.artist_album.album_id)\
+        .filter(models.artists.artist_name == artist_name).all()
     return requested_data
 

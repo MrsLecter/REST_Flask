@@ -1,12 +1,13 @@
 from enum import unique
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import PrimaryKeyConstraint
 
 # create instance
 app = Flask(__name__)
 # add db
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://**login**:**passwd**@localhost:5432/**database**'
-app.config['SECRET_KEY'] = '**key**'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:psql@localhost:5432/db_music'
+app.config['SECRET_KEY'] = 'supersecret_key'
 # initialize
 db = SQLAlchemy(app)
 
@@ -16,7 +17,7 @@ class artists(db.Model):
     artist_id = db.Column(db.Integer, primary_key=True)
     artist_name = db.Column(db.String(50), unique=True, nullable=False)
     artist_info = db.Column(db.Text, nullable=True)
-    albums_id = db.relationship('albums', backref='artists')
+    albums = db.relationship("albums", secondary='artist_album')
 
     def __init__(self, artist_name, artist_info):
         self.artist_name = artist_name
@@ -29,8 +30,8 @@ class albums(db.Model):
     album_name = db.Column(db.String(45), unique=True, nullable=False)
     album_year = db.Column(db.Integer, nullable=False)
     album_info = db.Column(db.Text, unique=True, nullable=False)
-    artist_id = db.Column(db.Integer, db.ForeignKey('artists.artist_id'))
-    songs_id = db.relationship('songs', backref='albums')
+    artists = db.relationship("artists", secondary='artist_album')
+    songs = db.relationship("songs", secondary='album_song')
     
     def __init__(self, album_id, albumm_name, album_year, album_info):
         self.album_id = album_id
@@ -45,7 +46,7 @@ class songs(db.Model):
     song_text = db.Column(db.Text, unique=True, nullable=False)
     song_year = db.Column(db.Integer, nullable=False)
     original_lang = db.Column(db.String(3), nullable=False)
-    album_id = db.Column(db.Integer, db.ForeignKey('albums.album_id'))
+    albums = db.relationship("albums", secondary='album_song')
 
     def __init__(self, song_id, song_name, song_text, song_year, original_lang):
         self.song_id = song_id
@@ -54,5 +55,28 @@ class songs(db.Model):
         self.song_year = song_year
         self.original_lang = original_lang
 
+class artist_album(db.Model):
+    __tablename__='artist_album'
+    artist_id = db.Column(db.Integer, db.ForeignKey('artists.artist_id'))
+    album_id = db.Column(db.Integer, db.ForeignKey('albums.album_id'))
+    __table_args__ = (PrimaryKeyConstraint (artist_id, album_id),{},)
+    
+    def __init__(self, artist_id, album_id):
+        self.artist_id = artist_id
+        self.album_id = album_id
+
+class album_song(db.Model):
+    __tablename__='album_song'
+    album_id = db.Column(db.Integer,  db.ForeignKey('albums.album_id'))
+    song_id = db.Column(db.Integer,  db.ForeignKey('songs.song_id'))
+    __table_args__ = (PrimaryKeyConstraint (album_id, song_id),{},)
+
+    def __init__(self, album_id, song_id):
+        self.album_id = album_id
+        self.song_id = song_id
+
+
 
 db.create_all()
+
+
