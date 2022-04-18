@@ -14,12 +14,12 @@ from datetime import datetime
 # create instance
 app = Flask(__name__)
 # add db
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:psql@localhost:5432/db_music'
-app.config['SECRET_KEY'] = 'supersecret_key'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://**login**:**passwd**@localhost:5432/**db_name**'
+app.config['SECRET_KEY'] = '**key**'
 # initialize
 db = SQLAlchemy(app)
 
-
+# getItemId
 def getItems(table_name, item_name='none', item_id='none'):
     if table_name == 'artists':
         if item_name == 'none':
@@ -146,28 +146,51 @@ def updateItem(table_name, item_object):
 
     db.session.commit()
 
-
-def getAlbumsForArtist(artist_name):
-    requested_data = models.albums.query\
-        .join(models.artist_album, models.artist_album.album_id == models.albums.album_id)\
-        .join(models.artists, models.artists.artist_id == models.artist_album.artist_id)\
-        .filter(models.artists.artist_name==artist_name).all()
+# getCurrentAlbum, getAlbumForSong
+def getAlbumsForArtist(artist_name, album_name = 'none', song_name = 'none'):
+    if album_name == 'none' and song_name == 'none':
+        requested_data = models.albums.query\
+            .join(models.artist_album, models.artist_album.album_id == models.albums.album_id)\
+            .join(models.artists, models.artists.artist_id == models.artist_album.artist_id)\
+            .filter(models.artists.artist_name==artist_name).all()
+    elif album_name == 'none' and song_name != 'none':
+        requested_data = models.albums.query\
+            .join(models.artist_album, models.artist_album.album_id == models.albums.album_id)\
+            .join(models.artists, models.artists.artist_id == models.artist_album.artist_id)\
+            .filter(models.artists.artist_name == artist_name)\
+            .filter(models.albums.album_name == album_name).all()
+    elif album_name != 'none' and song_name != 'none':
+        requested_data = models.albums.query\
+            .join(models.artist_album, models.artist_album.album_id == models.albums.album_id)\
+            .join(models.album_song, models.album_song.album_id == models.albums.album_id)\
+            .join(models.songs, models.songs.song_id == models.album_song.song_id)\
+            .join(models.artists, models.artists.artist_id == models.artist_album.artist_id)\
+            .filter(models.artists.artist_name == artist_name)\
+            .filter(models.albums.album_name == 'Revolver').all()
     return requested_data
 
 
-def getCurrentAlbum(artist_name, album_name):
-    requested_data = models.albums.query\
-        .join(models.artist_album, models.artist_album.album_id == models.albums.album_id)\
-        .join(models.artists, models.artists.artist_id == models.artist_album.artist_id)\
-        .filter(models.artists.artist_name == artist_name)\
-        .filter(models.albums.album_name == album_name).all()
+# getSongsForAlbums , getSongForAlbum, getCurrentText.song_text
+def getSongsForArtist(artist_name, album_name = 'none', song_name = 'none'):
+    if album_name == 'none' and song_name == 'none':
+        requested_data =models.songs.query\
+            .join(models.album_song, models.album_song.song_id == models.songs.song_id)\
+            .join(models.artist_album, models.artist_album.album_id == models.album_song.album_id)\
+            .join(models.artists, models.artists.artist_id == models.artist_album.album_id)\
+            .filter(models.artists.artist_name == artist_name).all()
+    elif album_name != 'none' and song_name == 'none':
+        requested_data = models.songs.query\
+            .join(models.album_song, models.album_song.song_id == models.songs.song_id)\
+            .join(models.artist_album, models.artist_album.album_id == models.album_song.album_id)\
+            .join(models.artists, models.artists.artist_id == models.artist_album.album_id)\
+            .filter(models.sartists.artist_name == artist_name)\
+            .filter(models.albums.album_name == album_name).all()
+    elif album_name != 'none' and song_name != 'none':
+                requested_data = models.songs.query\
+            .join(models.album_song, models.album_song.song_id == models.songs.song_id)\
+            .join(models.artist_album, models.artist_album.album_id == models.album_song.album_id)\
+            .join(models.artists, models.artists.artist_id == models.artist_album.album_id)\
+            .filter(models.sartists.artist_name == artist_name)\
+            .filter(models.albums.album_name == album_name)\
+            .filter(models.songs.song_name == song_name).first()
     return requested_data
-
-def getSongsForArtist(artist_name):
-    requested_data =models.songs.query\
-        .join(models.album_song, models.album_song.song_id == models.songs.song_id)\
-        .join(models.artist_album, models.artist_album.album_id == models.album_song.album_id)\
-        .join(models.artists, models.artists.artist_id == models.artist_album.album_id)\
-        .filter(models.artists.artist_name == artist_name).all()
-    return requested_data
-
