@@ -9,7 +9,7 @@ class ArtistsSchema(Schema):
 
 
 class SongsSchema(Schema):
-    song_name = fields.Integer(required=True, validate=validate.Length(min=1))
+    song_name = fields.String(required=True, validate=validate.Length(min=1))
     song_text = fields.String(required=True, validate=validate.Length(min=10))
     song_year = fields.Integer(
         required=True, validate=validate.Range(min=1800, max=2025))
@@ -19,6 +19,7 @@ class SongsSchema(Schema):
 
 class AlbumsSchema(Schema):
     album_name = fields.String(required=True, validate=validate.Length(min=1))
+    album_info = fields.String(required=True, validate=validate.Length(min=10))
     album_year = fields.Integer(
         required=True, validate=validate.Range(min=1800, max=2025))
-    album_info = fields.String(required=True, validate=validate.Length(min=10))
+    

@@ -1,10 +1,6 @@
 from xml.dom.minidom import ReadOnlySequentialNamedNodeMap
 
-from requests import delete
-from main import all_albums
-from src import db_managing
-from src import JSONconverter
-
+import db_managing
 
 # grab only first/second element of item in array
 def getRequiredId(list, order):
@@ -15,9 +11,8 @@ def getRequiredId(list, order):
             required_id.append(item[order_item])
         return required_id
 
+
 # handle delete song
-
-
 def deleteSong(song_id):
     linked_albums = db_managing.getItems('album_song', 'song', song_id)
 

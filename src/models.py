@@ -18,7 +18,7 @@ class artists(db.Model):
     artist_id = db.Column(db.Integer, primary_key=True)
     artist_name = db.Column(db.String(50), unique=True, nullable=False)
     artist_info = db.Column(db.Text, nullable=False)
-    albums = db.relationship("albums", secondary='artist_album')
+    albums = db.relationship("albums", secondary='artist_album', overlaps="albums")
 
     def __init__(self, artist_name, artist_info):
         self.artist_name = artist_name
@@ -31,11 +31,10 @@ class albums(db.Model):
     album_name = db.Column(db.String(45), unique=True, nullable=False)
     album_year = db.Column(db.Integer, nullable=False)
     album_info = db.Column(db.Text, unique=True, nullable=False)
-    artists = db.relationship("artists", secondary='artist_album')
-    songs = db.relationship("songs", secondary='album_song')
+    artists = db.relationship("artists", secondary='artist_album', overlaps="albums")
+    songs = db.relationship("songs", secondary='album_song', overlaps="albums")
     
-    def __init__(self, album_id, albumm_name, album_year, album_info):
-        self.album_id = album_id
+    def __init__(self, albumm_name, album_year, album_info):
         self.album_name = albumm_name
         self.album_year = album_year
         self.album_info = album_info
@@ -47,10 +46,9 @@ class songs(db.Model):
     song_text = db.Column(db.Text, unique=True, nullable=False)
     song_year = db.Column(db.Integer, nullable=False)
     original_lang = db.Column(db.String(3), nullable=False)
-    albums = db.relationship("albums", secondary='album_song')
+    albums = db.relationship("albums", secondary='album_song', overlaps="albums")
 
-    def __init__(self, song_id, song_name, song_text, song_year, original_lang):
-        self.song_id = song_id
+    def __init__(self, song_name, song_text, song_year, original_lang):
         self.song_name = song_name
         self.song_text = song_text
         self.song_year = song_year
