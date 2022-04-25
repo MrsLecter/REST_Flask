@@ -1,12 +1,19 @@
 #!/usr/bin/python3
 import typing
+import json
 from typing import Dict
 from venv import create
 import psycopg2
 from configparser import ConfigParser
+# from src import models
 import models
+# from src import serializers
+import serializers
+from marshmallow import ValidationError
+# import serializers
+import JSONconverter
 
-from flask import Flask
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
@@ -14,8 +21,8 @@ from datetime import datetime
 # create instance
 app = Flask(__name__)
 # add db
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://**login**:**passwd**@localhost:5432/**db_name**'
-app.config['SECRET_KEY'] = '**key**'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:psql@localhost:5432/db_music'
+app.config['SECRET_KEY'] = 'supersecret_key'
 # initialize
 db = SQLAlchemy(app)
 
@@ -58,14 +65,26 @@ def getItems(table_name, item_name='none', item_id='none'):
 
 def postItem(table_name, item_object):
     if table_name == 'artists':
-        item_model = models.artists(
-            item_object['artist_name'], item_object['artist_info'])
+        errors = serializers.SongsSchema.validate(item_object)
+        if errors:
+            print(errors)
+        else:
+            item_model = models.artists(
+                item_object['artist_name'], item_object['artist_info'])
     elif table_name == 'songs':
-        item_model = models.songs(
-            item_object['song_name'], item_object['song_text'], item_object['song_year'], item_object['original_lang'])
+        errors = serializers.SongsSchema.validate(item_object)
+        if errors:
+            print(errors)
+        else:
+            item_model = models.songs(
+                item_object['song_name'], item_object['song_text'], item_object['song_year'], item_object['original_lang'])
     elif table_name == 'albums':
-        item_model = models.albums(
-            item_object['album_name'], item_object['album_year'], item_object['album_info'])
+        errors = serializers.AlbumsSchema.validate(item_object)
+        if errors:
+            print(errors)
+        else:
+            item_model = models.albums(
+                item_object['album_name'], item_object['album_year'], item_object['album_info'])
     elif table_name == 'aritst_song':
         item_model = models.artist_album(
             item_object['artist_id'], item_object['album_id'])
@@ -121,28 +140,40 @@ def deleteItem(table_name, item_name, item_id):
 
 def updateItem(table_name, item_object):
     if table_name == 'artists':
-        requested_data = models.artists.query.filter_by(
-            artist_name=item_object['artist_name']).first()
+        errors = serializers.ArtistsSchema.validate(item_object)
+        if errors:
+            print(errors)
+        else:
+            requested_data = models.artists.query.filter_by(
+                artist_name=item_object['artist_name']).first()
 
-        requested_data.artist_name = item_object['artist_name']
-        requested_data.artist_info = item_object['artist_info']
+            requested_data.artist_name = item_object['artist_name']
+            requested_data.artist_info = item_object['artist_info']
 
     elif table_name == 'albums':
-        requested_data = models.albums.query.filter_by(
-            album_name=item_object['album_name']).first()
+        errors = serializers.AlbumsSchema.validate(item_object)
+        if errors:
+            print(errors)
+        else:
+            requested_data = models.albums.query.filter_by(
+                album_name=item_object['album_name']).first()
 
-        requested_data.album_name = item_object['album_name']
-        requested_data.album_year = item_object['album_year']
-        requested_data.album_info = item_object['album_info']
+            requested_data.album_name = item_object['album_name']
+            requested_data.album_year = item_object['album_year']
+            requested_data.album_info = item_object['album_info']
 
     elif table_name == 'songs':
-        requested_data = models.songs.query.filter_by(
-            song_name=item_object['song_name']).first()
+        errors = serializers.SongsSchema.validate(item_object)
+        if errors:
+            print(errors)
+        else:
+            requested_data = models.songs.query.filter_by(
+                song_name=item_object['song_name']).first()
 
-        requested_data.song_name = item_object['song_name']
-        requested_data.song_text = item_object['song_text']
-        requested_data.song_year = item_object['song_year']
-        requested_data.original_lang = item_object['original_lang']
+            requested_data.song_name = item_object['song_name']
+            requested_data.song_text = item_object['song_text']
+            requested_data.song_year = item_object['song_year']
+            requested_data.original_lang = item_object['original_lang']
 
     db.session.commit()
 
@@ -194,3 +225,8 @@ def getSongsForArtist(artist_name, album_name = 'none', song_name = 'none'):
             .filter(models.albums.album_name == album_name)\
             .filter(models.songs.song_name == song_name).first()
     return requested_data
+
+
+# if __name__ == '__main__':
+#     print(getItems('artists'))
+
