@@ -22,8 +22,8 @@ from datetime import datetime
 app = Flask(__name__)
 
 # add db
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:psql@localhost:5432/db_music'
-app.config['SECRET_KEY'] = 'supersecret_key'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://**login**:**passwd**@localhost:5432/**database**'
+app.config['SECRET_KEY'] = '**key**'
 # initialize
 db = SQLAlchemy(app)
 
