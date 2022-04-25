@@ -3,19 +3,11 @@ import typing
 import json
 from typing import Dict
 from venv import create
-import psycopg2
-from configparser import ConfigParser
-# from src import models
-import models
-# from src import serializers
-import serializers
-from marshmallow import ValidationError
-# import serializers
-import JSONconverter
+from src import models
+from src import serializers
 
 from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
 
 
 # create instance

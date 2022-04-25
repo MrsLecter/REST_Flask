@@ -9,15 +9,11 @@
   <body>
     <p>{{title}}</p>
     <hr />
-    <ul>
-      <ol><a href='/artists'>Go to artists</a></ol>
-    </ul>
-    <ul>
-      {%for key in data%}
-      <li>{{key}}</li>
-      {%endfor%}
-    </ul>
-    <br />
-    <p>{{translated}}</p>
+    <p>
+      <p><i><b>Name:</b></i> {{data.song_name}}</p>
+      <p><i><b>Text:</b></i> {{data.song_text}}</p>
+      <p><i><b>Year:</b></i> {{data.song_year}}</p>
+      <p><i><b>Language:</b></i> {{data.original_lang}}</p>
+    </p>
   </body>
 </html>

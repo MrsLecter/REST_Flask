@@ -10,11 +10,8 @@
     <p>{{title}}</p>
     <hr />
     <ul>
-      <ol><a href='/artists'>Go to artists</a></ol>
-    </ul>
-    <ul>
       {%for key in data%}
-      <li>{{key}}</li>
+      <li><a href='/artists/{{key.artist_name}}'>{{key.artist_name}}</a></li>
       {%endfor%}
     </ul>
     <br />

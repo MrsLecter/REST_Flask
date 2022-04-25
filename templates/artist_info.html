@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>REST API</title>
+  </head>
+  <body>
+    <p>{{title}}</p>
+    <hr />
+    <p>
+      <p><i><b>Name:</b></i> {{data.artist_name}}</p>
+      <p><i><b>Info:</b></i> {{data.artist_info}}</p>
+      <p><i><b>Albums:</b></i><a href='/artists/{{data.artist_name}}/albums'>Go to albums</a></p>
+      <p><i><b>Songs:</b></i><a href='/artists/{{data.artist_name}}/songs'>Go to songs</a></p>
+    </p>
+    <a href='/artists'>Go to artists list</a>
+  </body>
+</html>

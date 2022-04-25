@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields, validate, post_load
-import models
-import utils
+from src import models
+from src import utils
 
 
 class ArtistsSchema(Schema):

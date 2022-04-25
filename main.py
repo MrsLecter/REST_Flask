@@ -1,18 +1,28 @@
 from flask import Flask, request, render_template, redirect, jsonify, abort
 
 from src import db_managing
+from src import db_alchemy
 from src import JSONconverter
 from src import translator
 from src import utils
 
 from logging import FileHandler, WARNING, INFO
 from http import HTTPStatus
+from flask_sqlalchemy import SQLAlchemy
 
 import json
 import logging
 import time
+import marshmallow
 
 app = Flask(__name__)
+
+# add db
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://**login**:**passwd**@localhost:5432/**database**'
+app.config['SECRET_KEY'] = '**key**'
+
+# initialize
+db = SQLAlchemy(app)
 
 logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 #add logging
@@ -21,8 +31,6 @@ if not app.debug:
     file_handler.setLevel(WARNING)
     app.logger.addHandler(file_handler)
 
-#TODO: Запросы на несуществующие ресурсы (например, /some/non/existing/resource) корректно обрабатываются (возвращается human friendly сообщение и 404 статус код)
-
 
 @app.route('/', methods=['GET'])
 def home_page():
@@ -30,13 +38,12 @@ def home_page():
         #show home page
         return render_template("index.html", title='home page', data={'hello world'}), HTTPStatus.OK.value
 
-#TODO:Сервер возвращает статус код 400 и соответствующее сообщение, если тело запроса не содержит обязательных полей
+
 @app.route('/artists', methods=['GET', 'POST'])
 def all_artists():
     if request.method == 'GET':
-        artists_data = JSONconverter.getJSONFromList(
-            db_managing.getItems('artists'))
-        return render_template("index.html", title='artists page', data=artists_data), HTTPStatus.OK.value
+        artists_data =db_alchemy.getItems('artists')
+        return render_template("artists.html", title='artists page', data=artists_data), HTTPStatus.OK.value
     elif request.method == 'POST':
         #load data from request
         request_data = json.loads(request.get_data().decode('UTF-8'))
@@ -45,7 +52,7 @@ def all_artists():
         #if not exist
         if ifItemExist == False:
             #put item into data base
-            db_managing.postItem('artists', request_data)
+            db_alchemy.postItem('artists', request_data)
             return render_template("index.html", title='artists page', data=['Item added successfully']), HTTPStatus.CREATED.value
         #if item already exists
         elif ifItemExist == True:
@@ -55,9 +62,8 @@ def all_artists():
 @app.route('/artists/<artist_name>', methods=['GET', 'PUT', 'DELETE'])
 def current_artist(artist_name):
     if request.method == 'GET':
-        current_artist_data = JSONconverter.getJSONFromList(
-            db_managing.getItems('artists', artist_name))
-        return render_template("index.html", title='current artists page', data=current_artist_data), 200
+        current_artist_data =db_alchemy.getItems('artists', artist_name)
+        return render_template("artist_info.html", title='current artists page', data=current_artist_data), 200
     elif request.method == 'PUT':
         #ask for request data
         request_data = json.loads(request.get_data().decode('UTF-8'))
@@ -97,9 +103,8 @@ def current_artist(artist_name):
 @app.route('/artists/<artist_name>/albums', methods=['GET', 'POST'])
 def all_albums(artist_name):
     if request.method == 'GET':
-        all_albums_data = JSONconverter.getJSONFromList(
-            db_managing.getAlbumsForArtist(artist_name))
-        return render_template("index.html", title='all albums page', data=all_albums_data), HTTPStatus.OK.value
+        all_albums_data = db_alchemy.getAlbumsForArtist(artist_name)
+        return render_template("albums.html", title='all albums page', data=all_albums_data, artist=artist_name), HTTPStatus.OK.value
     elif request.method == 'POST':
         #load data from request
         request_data = json.loads(request.get_data().decode('UTF-8'))
@@ -124,9 +129,8 @@ def all_albums(artist_name):
 @app.route('/artists/<artist_name>/albums/<album_name>', methods=['GET', 'PUT', 'DELETE'])
 def current_album(artist_name, album_name):
     if request.method == 'GET':
-        current_album_data = JSONconverter.getJSONFromList(
-            db_managing.getCurrentAlbum(artist_name, album_name))
-        return render_template("index.html", title='current album page', data=current_album_data), HTTPStatus.OK.value
+        current_album_data = db_alchemy.getCurrentAlbum(artist_name, album_name)
+        return render_template("album_info.html", title='current album page', data=current_album_data), HTTPStatus.OK.value
     elif request.method == 'PUT':
         #ask for request data
         request_data = json.loads(request.get_data().decode('UTF-8'))
@@ -162,24 +166,22 @@ def current_album(artist_name, album_name):
 @app.route('/artists/<artist_name>/songs', methods=['GET'])
 def show_all_songs(artist_name):
     if request.method == 'GET':
-        all_songs_data = JSONconverter.getJSONFromList(
-            db_managing.getSongsForArtist(artist_name))
-        return render_template("index.html", title='all songs page', data=all_songs_data), 200
+        all_songs_data = db_alchemy.getSongsForArtist(artist_name)
+        return render_template("songs.html", title='all songs page', data=all_songs_data, artist=artist_name), 200
 
 
 @app.route('/artists/<artist_name>/songs/<song_name>', methods=['GET'])
 def current_song(artist_name, song_name):
     if request.method == 'GET':
-        album_name = db_managing.getAlbumForSong(artist_name, song_name)
+        album_name = db_alchemy.getAlbumForSong(artist_name, song_name)
         return redirect(f"http://localhost:5000/artists/{artist_name}/albums/{album_name}/songs/{song_name}", code=301)
 
 
 @app.route('/artists/<artist_name>/albums/<album_name>/songs', methods=['GET', 'POST'])
 def songs_current_album(artist_name, album_name):
     if request.method == 'GET':
-        current_album_data = JSONconverter.getJSONFromList(
-            db_managing.getSongsForAlbums(artist_name, album_name))
-        return render_template("index.html", title='current album page', data=current_album_data), HTTPStatus.OK.value
+        current_album_data = db_alchemy.getSongsForAlbums(artist_name, album_name)
+        return render_template("songs.html", title='current album page', data=current_album_data), HTTPStatus.OK.value
     elif request.method == 'POST':
         #load data from request
         request_data = json.loads(request.get_data().decode('UTF-8'))
@@ -207,11 +209,10 @@ def songs_current_album(artist_name, album_name):
 @app.route('/artists/<artist_name>/albums/<album_name>/songs/<song_name>', methods=['GET', 'PUT', 'DELETE'])
 def current_songs_current_album(artist_name, album_name, song_name):
     if request.method == 'GET':
-        current_song_data = JSONconverter.getJSONFromList(
-            db_managing.getSongForAlbum(artist_name, album_name, song_name))
+        current_song_data = db_alchemy.getSongForAlbum(artist_name, album_name, song_name)
         translated_text = translator.getTranslation(
               db_managing.getCurrentText(artist_name, song_name)[0][0], 'en', 'ru')
-        return render_template("index.html", title='current album page', data=current_song_data, translated=translated_text), HTTPStatus.OK.value
+        return render_template("song_info.html", title='current album page', data=current_song_data, translated=translated_text), HTTPStatus.OK.value
     elif request.method == 'PUT':
         #ask for request data
         request_data = json.loads(request.get_data().decode('UTF-8'))
@@ -249,8 +250,7 @@ def search():
     if request.method == 'GET':
         args = request.args
         args_dict = args.to_dict()
-        searched_data = JSONconverter.getJSONFromList(
-            db_managing.searchItems(args_dict["table"], args_dict["item"]))
+        searched_data = db_alchemy.searchItems(args_dict["table"], args_dict["item"])
         return render_template("index.html", title='search page', data=searched_data), 200
 
 

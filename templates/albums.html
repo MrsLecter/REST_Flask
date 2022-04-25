@@ -10,14 +10,10 @@
     <p>{{title}}</p>
     <hr />
     <ul>
-      <ol><a href='/artists'>Go to artists</a></ol>
-    </ul>
-    <ul>
       {%for key in data%}
-      <li>{{key}}</li>
+      <li><a href='/artists/{{artist}}/albums/{{key.album_name}}'>{{key.album_name}}</a></li>
       {%endfor%}
     </ul>
-    <br />
-    <p>{{translated}}</p>
+    <a href='/artists/{{artist}}'>Go to artist</a>
   </body>
 </html>

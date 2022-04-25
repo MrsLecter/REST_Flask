@@ -1,6 +1,6 @@
 from xml.dom.minidom import ReadOnlySequentialNamedNodeMap
 
-import db_managing
+from src import db_managing
 
 # grab only first/second element of item in array
 def getRequiredId(list, order):
