@@ -3,11 +3,12 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import PrimaryKeyConstraint
 
+
 # create instance
 app = Flask(__name__)
 # add db
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://**login**:**passwd**@localhost:5432/**db_name**'
-app.config['SECRET_KEY'] = '**key**'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:psql@localhost:5432/db_music'
+app.config['SECRET_KEY'] = 'supersecret_key'
 # initialize
 db = SQLAlchemy(app)
 
@@ -16,7 +17,7 @@ class artists(db.Model):
     __tablename__='artists'
     artist_id = db.Column(db.Integer, primary_key=True)
     artist_name = db.Column(db.String(50), unique=True, nullable=False)
-    artist_info = db.Column(db.Text, nullable=True)
+    artist_info = db.Column(db.Text, nullable=False)
     albums = db.relationship("albums", secondary='artist_album')
 
     def __init__(self, artist_name, artist_info):
