@@ -5,13 +5,9 @@ from typing import Dict
 from venv import create
 import psycopg2
 from configparser import ConfigParser
-# from src import models
-import models
-# from src import serializers
-import serializers
+from src import models
+from src import serializers
 from marshmallow import ValidationError
-# import serializers
-import JSONconverter
 
 from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -21,8 +17,8 @@ from datetime import datetime
 # create instance
 app = Flask(__name__)
 # add db
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:psql@localhost:5432/db_music'
-app.config['SECRET_KEY'] = 'supersecret_key'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://**login**:**passwd**@localhost:5432/db_music'
+app.config['SECRET_KEY'] = '**key**'
 # initialize
 db = SQLAlchemy(app)
 
@@ -226,7 +222,4 @@ def getSongsForArtist(artist_name, album_name = 'none', song_name = 'none'):
             .filter(models.songs.song_name == song_name).first()
     return requested_data
 
-
-# if __name__ == '__main__':
-#     print(getItems('artists'))
 
