@@ -9,7 +9,14 @@ services:
       - logvolume01:/var/log
     links:
       - postgres
-  redis:
+  postgres:
     image: postgres
+    port: 5432
+    username: postgres
+    password: psql
+    host: localhost
+    databaseName: db_music
+    jdbc-url: jdbc:postgresql://${services.postgres.host}:${services.postgres.port}/${services.postgres.databaseName}
+
 volumes:
   logvolume01: {}
