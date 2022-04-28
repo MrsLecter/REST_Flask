@@ -3,19 +3,23 @@ services:
   postgres:
     image: postgres
     volumes:
-      - ./data/db:/var/lib/postgresql/data
+      - ../2. Init Database:/docker-entrypoint-initdb.d
+      - .:/var/lib/postgresql/data
     restart: always
     ports:
-        - "5432:5432"
+        - "80:5432"
     environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: psql
       POSTGRES_DB: db_music
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+      
 
   web:
     image: web
     build: .
-    command: python app.py runserver 0.0.0.0:8000
+    command: python app.py runserver 127.0.0.1:5000
     volumes:
       - .:/app
     restart: always
