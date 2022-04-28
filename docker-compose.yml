@@ -1,22 +1,32 @@
-version: "3.9"  # optional since v1.27.0
+version: "3.3"  # optional since v1.27.0
 services:
-  web:
-    build: .
-    ports:
-      - "8000:5000"
-    volumes:
-      - .:/code
-      - logvolume01:/var/log
-    links:
-      - postgres
   postgres:
     image: postgres
-    port: 5432
-    username: postgres
-    password: psql
-    host: localhost
-    databaseName: db_music
-    jdbc-url: jdbc:postgresql://${services.postgres.host}:${services.postgres.port}/${services.postgres.databaseName}
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    restart: always
+    ports:
+        - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: psql
+      POSTGRES_DB: db_music
 
-volumes:
-  logvolume01: {}
+  web:
+    image: web
+    build: .
+    command: python app.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    restart: always
+    ports:
+      - "8000:5000"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: psql
+      POSTGRES_DB: db_music
+    links:
+      - postgres
+    depends_on:
+      - postgres
+  
