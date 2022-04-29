@@ -13,14 +13,24 @@ import logging
 import time
 import marshmallow
 
+from sqlalchemy import PrimaryKeyConstraint, create_engine
+from sqlalchemy.orm import scoped_session, sessionmaker
+
 app = Flask(__name__)
 
 # add db
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:psql@localhost:5432/db_music'
-app.config['SECRET_KEY'] = 'supersecret_key'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://**login**:**passwd**@localhost:5432/**db_name**'
+app.config['SECRET_KEY'] = '**key**'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS']= False
 
 # initialize
 db = SQLAlchemy(app)
+
+# conn_url = 'postgresql+psycopg2://postgres:psql@postgres/db_music'
+# engine = create_engine(conn_url)
+# db = scoped_session(sessionmaker(bind=engine))
+
+
 
 logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 #add logging
@@ -63,6 +73,7 @@ def current_artist(artist_name):
         current_artist_data =db_alchemy.getItems('artists', artist_name)
         return render_template("artist_info.html", title='current artists page', data=current_artist_data), 200
     elif request.method == 'PUT':
+        #object is updated by name. do not change the name
         #ask for request data
         request_data = json.loads(request.get_data().decode('UTF-8'))
         #ask for item id in an existing database
@@ -86,13 +97,8 @@ def current_artist(artist_name):
         item_id = db_alchemy.getItemId('artists' , request_data['artist_name'])
         ifItemExist = bool(item_id)
         if ifItemExist == True:
-            #ask data base all album_id which links with current artist_id
-            all_albums_id = utils.getRequiredId(db_alchemy.getItems('artist_albums', 'artist', item_id), 1)
-            #delete artist item from the table artists
-            db_alchemy.deleteItem('artists', item_id)
-            #delete row artist_id--album_id from linking table artist_album
-            db_alchemy.deleteItem('artist_album', item_id, 'album')
-            #TODO: delete items without links
+            db_alchemy.deleteArtist(artist_name)
+            db_alchemy.clearItemsWithoutReferences()
             return render_template("index.html", title='current artists page', data=['Item deleted successfully!']), HTTPStatus.ACCEPTED.value
         elif ifItemExist == False:
             return render_template("index.html", title='current artists page', data=['Item not found!']), HTTPStatus.NOT_FOUND.value
@@ -127,7 +133,7 @@ def all_albums(artist_name):
 @app.route('/artists/<artist_name>/albums/<album_name>', methods=['GET', 'PUT', 'DELETE'])
 def current_album(artist_name, album_name):
     if request.method == 'GET':
-        current_album_data = db_alchemy.getCurrentAlbum(artist_name, album_name)
+        current_album_data = db_alchemy.getAlbumsForArtist(artist_name, album_name)
         return render_template("album_info.html", title='current album page', data=current_album_data), HTTPStatus.OK.value
     elif request.method == 'PUT':
         #ask for request data
@@ -153,9 +159,8 @@ def current_album(artist_name, album_name):
         item_id = db_alchemy.getItemId('albums' , request_data['album_name'])
         ifItemExist = bool(item_id)
         if ifItemExist == True:
-            db_alchemy.deleteItem('albums', item_id)
-            #delete album from linking table artist_album
-            db_alchemy.deleteItem('artist_album', item_id, 'album')
+            db_alchemy.deleteAlbum(artist_name, album_name)
+            db_alchemy.clearItemsWithoutReferences()
             return render_template("index.html", title='current album page', data=['Item deleted successfully!']), HTTPStatus.ACCEPTED.value
         elif ifItemExist == False:
             return render_template("index.html", title='current album page', data=['Item not found!']), HTTPStatus.NOT_FOUND.value
@@ -171,14 +176,16 @@ def show_all_songs(artist_name):
 @app.route('/artists/<artist_name>/songs/<song_name>', methods=['GET'])
 def current_song(artist_name, song_name):
     if request.method == 'GET':
-        album_name = db_alchemy.getAlbumForSong(artist_name, song_name)
+        #none - it's missing album name
+        album_name = db_alchemy.getAlbumsForArtist(artist_name, 'none', song_name)['album_name']
+        print('app album_name: ',album_name)
         return redirect(f"http://localhost:5000/artists/{artist_name}/albums/{album_name}/songs/{song_name}", code=301)
 
 
 @app.route('/artists/<artist_name>/albums/<album_name>/songs', methods=['GET', 'POST'])
 def songs_current_album(artist_name, album_name):
     if request.method == 'GET':
-        current_album_data = db_alchemy.getSongsForAlbums(artist_name, album_name)
+        current_album_data = db_alchemy.getSongsForArtist(artist_name, album_name)
         return render_template("songs.html", title='current album page', data=current_album_data), HTTPStatus.OK.value
     elif request.method == 'POST':
         #load data from request
@@ -207,10 +214,10 @@ def songs_current_album(artist_name, album_name):
 @app.route('/artists/<artist_name>/albums/<album_name>/songs/<song_name>', methods=['GET', 'PUT', 'DELETE'])
 def current_songs_current_album(artist_name, album_name, song_name):
     if request.method == 'GET':
-        current_song_data = db_alchemy.getSongForAlbum(artist_name, album_name, song_name)
+        current_song_data = db_alchemy.getSongsForArtist(artist_name, album_name, song_name)
         translated_text = translator.getTranslation(
-              db_alchemy.getCurrentText(artist_name, song_name)[0][0], 'en', 'ru')
-        return render_template("song_info.html", title='current album page', data=current_song_data, translated=translated_text), HTTPStatus.OK.value
+              db_alchemy.getItems('songs', song_name)['song_text'], 'en', 'ru')
+        return render_template("song_info.html", title='current song page', data=current_song_data, translated=translated_text), HTTPStatus.OK.value
     elif request.method == 'PUT':
         #ask for request data
         request_data = json.loads(request.get_data().decode('UTF-8'))
@@ -235,9 +242,8 @@ def current_songs_current_album(artist_name, album_name, song_name):
         item_id = db_alchemy.getItemId('songs' , request_data['song_name'])
         ifItemExist = bool(item_id)
         if ifItemExist == True:
-            db_alchemy.deleteItem('songs', item_id)
-            #delete song from linking table album_song
-            db_alchemy.deleteItem('album_song', item_id, 'song')
+            db_alchemy.deleteSong(album_name, song_name)
+            db_alchemy.clearItemsWithoutReferences()
             return render_template("index.html", title='current song page', data=['Item deleted successfully!']), HTTPStatus.ACCEPTED.value
         elif ifItemExist == False:
             return render_template("index.html", title='current song page', data=['Item not found!']), HTTPStatus.NOT_FOUND.value
@@ -249,12 +255,12 @@ def search():
         args = request.args
         args_dict = args.to_dict()
         searched_data = db_alchemy.searchItems(args_dict["table"], args_dict["item"])
-        return render_template("index.html", title='search page', data=searched_data), 200
+        return render_template("index.html", title='search page', data=searched_data), HTTPStatus.OK.value
 
 
 @app.errorhandler(409)
 def conflict(e):
-    return jsonify({'errorCode': 409, 'message': 'Conflict'})
+    return jsonify({'errorCode': HTTPStatus.CONFLICT.value, 'message': HTTPStatus.CONFLICT.description})
 
 
 @app.errorhandler(404)

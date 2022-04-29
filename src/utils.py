@@ -1,7 +1,3 @@
-from xml.dom.minidom import ReadOnlySequentialNamedNodeMap
-
-from src import db_managing
-
 # grab only first/second element of item in array
 def getRequiredId(list, order):
     if order == 1 or order == 0:
@@ -10,11 +6,6 @@ def getRequiredId(list, order):
         for item in list:
             required_id.append(item[order_item])
         return required_id
-
-
-# handle delete song
-def deleteSong(song_id):
-    linked_albums = db_managing.getItems('album_song', 'song', song_id)
 
 
 # constraints to validate original_lang in song_model

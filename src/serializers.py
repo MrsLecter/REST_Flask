@@ -22,4 +22,3 @@ class AlbumsSchema(Schema):
     album_info = fields.String(required=True, validate=validate.Length(min=10))
     album_year = fields.Integer(
         required=True, validate=validate.Range(min=1800, max=2025))
-    

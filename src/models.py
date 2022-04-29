@@ -1,16 +1,25 @@
 from enum import unique
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import PrimaryKeyConstraint
+from sqlalchemy import PrimaryKeyConstraint, create_engine
+from sqlalchemy.orm import scoped_session, sessionmaker
 
 
 # create instance
 app = Flask(__name__)
 # add db
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://**login**:**passwd**@localhost:5432/**database**'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://**login**:**passwd**@localhost:5432/**db_name**'
 app.config['SECRET_KEY'] = '**key**'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS']= False
 # initialize
 db = SQLAlchemy(app)
+# conn_url = 'postgresql+psycopg2://postgres:psql@postgres/db_music'
+# engine = create_engine(conn_url)
+# db = scoped_session(sessionmaker(bind=engine))
+
+import sqlalchemy as sa
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import scoped_session, sessionmaker
 
 
 class artists(db.Model):
