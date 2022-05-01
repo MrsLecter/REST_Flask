@@ -8,18 +8,13 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 # create instance
 app = Flask(__name__)
 # add db
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://**login**:**passwd**@localhost:5432/**db_name**'
-app.config['SECRET_KEY'] = '**key**'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:psql@postgres:5432/db_music'
+app.config['SECRET_KEY'] = 'supersecret_key'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS']= False
 # initialize
 db = SQLAlchemy(app)
-# conn_url = 'postgresql+psycopg2://postgres:psql@postgres/db_music'
-# engine = create_engine(conn_url)
-# db = scoped_session(sessionmaker(bind=engine))
-
-import sqlalchemy as sa
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import scoped_session, sessionmaker
+conn_url = 'postgresql+psycopg2://postgres:psql@postgres/db_music'
+engine = create_engine(conn_url)
 
 
 class artists(db.Model):
@@ -83,6 +78,7 @@ class album_song(db.Model):
         self.album_id = album_id
         self.song_id = song_id
 
-
+sqlalchemy = SQLAlchemy()
+sqlalchemy.init_app(app)
 db.create_all()
 

@@ -5,7 +5,6 @@ from typing import Dict
 from venv import create
 
 from sqlalchemy import create_engine
-from app import current_album
 from src import models
 from src import serializers
 # import serializers
@@ -14,26 +13,29 @@ from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-
 # create instance
 app = Flask(__name__)
 
 # add db
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://**login**:**passwd**@localhost:5432/**db_name**'
-app.config['SECRET_KEY'] = '**key**'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:psql@postgres:5432/db_music'
+app.config['SECRET_KEY'] = 'supersecret_key'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # initialize
 db = SQLAlchemy(app)
-
+sqlalchemy = SQLAlchemy()
+sqlalchemy.init_app(app)
+print('connect')
 # conn_url = 'postgresql+psycopg2://postgres:psql@postgres/db_music'
 # engine = create_engine(conn_url)
-# db = scoped_session(sessionmaker(bind=engine))
+# scoped_session(sessionmaker(bind=engine))
 
 
 def getItems(table_name, item_name='none', item_id='none'):
+    print('get items')
     if table_name == 'artists':
         if item_name == 'none':
             data = models.artists.query.all()
+            print('data: ',data)
             return [(json.loads(serializers.ArtistsSchema().dumps(item))) for item in data]
         else:
             requested_data = models.artists.query.filter_by(

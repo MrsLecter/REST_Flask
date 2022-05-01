@@ -1,0 +1,76 @@
+Exception on /artists [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/site-packages/sqlalchemy/util/_collections.py", line 1008, in __call__
+    return self.registry[key]
+KeyError: <greenlet.greenlet object at 0x7f79a0bd9d50 (otid=0x7f79a0bf3800) current active started main>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/site-packages/flask/app.py", line 2077, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/site-packages/flask/app.py", line 1525, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/site-packages/flask/app.py", line 1523, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/site-packages/flask/app.py", line 1509, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/app/app.py", line 53, in all_artists
+    artists_data =db_alchemy.getItems('artists')
+  File "/app/src/db_alchemy.py", line 36, in getItems
+    data = models.artists.query.all()
+  File "/usr/local/lib/python3.8/site-packages/flask_sqlalchemy/__init__.py", line 552, in __get__
+    return type.query_class(mapper, session=self.sa.session())
+  File "/usr/local/lib/python3.8/site-packages/sqlalchemy/orm/scoping.py", line 47, in __call__
+    sess = self.registry()
+  File "/usr/local/lib/python3.8/site-packages/sqlalchemy/util/_collections.py", line 1010, in __call__
+    return self.registry.setdefault(key, self.createfunc())
+  File "/usr/local/lib/python3.8/site-packages/sqlalchemy/orm/session.py", line 4209, in __call__
+    return self.class_(**local_kw)
+  File "/usr/local/lib/python3.8/site-packages/flask_sqlalchemy/__init__.py", line 176, in __init__
+    bind = options.pop('bind', None) or db.engine
+  File "/usr/local/lib/python3.8/site-packages/flask_sqlalchemy/__init__.py", line 998, in engine
+    return self.get_engine()
+  File "/usr/local/lib/python3.8/site-packages/flask_sqlalchemy/__init__.py", line 1008, in get_engine
+    state = get_state(app)
+  File "/usr/local/lib/python3.8/site-packages/flask_sqlalchemy/__init__.py", line 625, in get_state
+    assert 'sqlalchemy' in app.extensions, \
+AssertionError: The sqlalchemy extension was not registered to the current application.  Please make sure to call init_app() first.
+Exception on /artists [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/site-packages/sqlalchemy/util/_collections.py", line 1008, in __call__
+    return self.registry[key]
+KeyError: <greenlet.greenlet object at 0x7f8db75c6d50 (otid=0x7f8db7586180) current active started main>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/site-packages/flask/app.py", line 2077, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.8/site-packages/flask/app.py", line 1525, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.8/site-packages/flask/app.py", line 1523, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.8/site-packages/flask/app.py", line 1509, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "/app/app.py", line 53, in all_artists
+    artists_data =db_alchemy.getItems('artists')
+  File "/app/src/db_alchemy.py", line 36, in getItems
+    data = models.artists.query.all()
+  File "/usr/local/lib/python3.8/site-packages/flask_sqlalchemy/__init__.py", line 552, in __get__
+    return type.query_class(mapper, session=self.sa.session())
+  File "/usr/local/lib/python3.8/site-packages/sqlalchemy/orm/scoping.py", line 47, in __call__
+    sess = self.registry()
+  File "/usr/local/lib/python3.8/site-packages/sqlalchemy/util/_collections.py", line 1010, in __call__
+    return self.registry.setdefault(key, self.createfunc())
+  File "/usr/local/lib/python3.8/site-packages/sqlalchemy/orm/session.py", line 4209, in __call__
+    return self.class_(**local_kw)
+  File "/usr/local/lib/python3.8/site-packages/flask_sqlalchemy/__init__.py", line 176, in __init__
+    bind = options.pop('bind', None) or db.engine
+  File "/usr/local/lib/python3.8/site-packages/flask_sqlalchemy/__init__.py", line 998, in engine
+    return self.get_engine()
+  File "/usr/local/lib/python3.8/site-packages/flask_sqlalchemy/__init__.py", line 1008, in get_engine
+    state = get_state(app)
+  File "/usr/local/lib/python3.8/site-packages/flask_sqlalchemy/__init__.py", line 625, in get_state
+    assert 'sqlalchemy' in app.extensions, \
+AssertionError: The sqlalchemy extension was not registered to the current application.  Please make sure to call init_app() first.

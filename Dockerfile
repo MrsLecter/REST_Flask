@@ -16,7 +16,7 @@ RUN pip install deep-translator
 
 COPY . /app/
 
-VOLUME [ "/app/data" ]
+VOLUME /app/data
 
 EXPOSE 5000
 

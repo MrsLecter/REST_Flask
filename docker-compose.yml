@@ -2,10 +2,10 @@ version: "3.3"  # optional since v1.27.0
    
 services:
   postgres:
-    image: postgres:latest
+    image: postgres
+    user: postgres
     volumes:
-      - ../2. Init Database:/docker-entrypoint-initdb.d
-      - .:/var/lib/postgresql/data
+      - "/home/admin-linux/REST_Flask/data/db_music:/app/data/db_music"
     restart: always
     ports:
         - "80:5432"
@@ -13,9 +13,15 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: psql
-      POSTGRES_DB: db_music
-      PGDATA: "/var/lib/postgresql/data/pgdata"
+      POSTGRES_DB: "/app/data/db_music.sql"
 
+
+    healthcheck:
+      # this command checks if the database is ready, right on the source db server
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   web:
     image: web
     build: .
@@ -23,7 +29,7 @@ services:
       - .:/app
     restart: always
     ports:
-      - "8000:5000"
+      - "5000:5000"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: psql
@@ -32,3 +38,4 @@ services:
       - postgres
     depends_on:
       - postgres
+
