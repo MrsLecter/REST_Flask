@@ -1,0 +1,41 @@
+version: "3.3"  # optional since v1.27.0
+   
+services:
+  postgres:
+    image: postgres
+    user: postgres
+    volumes:
+      - "/home/admin-linux/REST_Flask/data/db_music:/app/data/db_music"
+    restart: always
+    ports:
+        - "80:5432"
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: psql
+      POSTGRES_DB: "/app/data/db_music.sql"
+
+
+    healthcheck:
+      # this command checks if the database is ready, right on the source db server
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  web:
+    image: web
+    build: .
+    volumes:
+      - .:/app
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: psql
+      POSTGRES_DB: db_music
+    links:
+      - postgres
+    depends_on:
+      - postgres
+

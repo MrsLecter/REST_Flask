@@ -1,0 +1,7 @@
+ docker run --name postgres -p 80:5432 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=psql -e POSTGRES_DB=db_music -e  PGDATA=/var/lib/postgresql/data/pgdata -d -v "/home/admin-linux/REST_Flask/data":/docker-entrypoint-initdb.d postgres
+
+
+docker build --tag python-docker
+
+docker run python-docker
+
